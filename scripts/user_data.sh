@@ -19,16 +19,13 @@ sudo apt install -y jenkins
 sudo systemctl enable jenkins
 sudo systemctl start jenkins
 
-# Install Jenkins CLI
-wget http://localhost:8080/jnlpJars/jenkins-cli.jar -O /tmp/jenkins-cli.jar
-
 # Setup init admin user
-JENKINS_HOME="/var/lib/jenkins"
-ADMIN_USER="admin"
-ADMIN_PASSWORD="your_secure_password"
+export JENKINS_HOME="/var/lib/jenkins"
+export ADMIN_USER="admin"
+export ADMIN_PASSWORD="your_secure_password"
 
 # Get the initial admin password
-INITIAL_ADMIN_PASSWORD=$(sudo cat $JENKINS_HOME/secrets/initialAdminPassword)
+export INITIAL_ADMIN_PASSWORD=$(sudo cat $JENKINS_HOME/secrets/initialAdminPassword)
 
 # Create groovy script to disable setup wizard and create admin user
 cat > /tmp/init.groovy << EOF
@@ -86,25 +83,46 @@ sudo systemctl restart jenkins
 # # ======================
 # # Install plugins
 # # ======================
-# wget "$JENKINS_URL/jnlpJars/jenkins-cli.jar" -O jenkins-cli.jar
+# Install Jenkins CLI
+JENKINS_URL="http://localhost:8080"
+wget "$JENKINS_URL/jnlpJars/jenkins-cli.jar" -O jenkins-cli.jar
 
-# PLUGINS=(
-#   git
-#   github
-#   workflow-aggregator    # For pipelines
-#   credentials
-#   credentials-binding
-#   pipeline-github-lib
-#   configuration-as-code
-#   job-dsl
-#   ssh-slaves
-#   matrix-auth
-#   email-ext
-#   blueocean
-# )
+PLUGINS=(
+  git
+  github
+  workflow-aggregator    # For pipelines
+  credentials
+  credentials-binding
+  pipeline-github-lib
+  configuration-as-code
+  job-dsl
+  ssh-slaves
+  matrix-auth
+  email-ext
+)
 
-# for plugin in "${PLUGINS[@]}"; do
-#   java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth $ADMIN_USER:$ADMIN_PASSWORD install-plugin git -deploy
-# done
+for plugin in "${PLUGINS[@]}"; do
+  java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth $ADMIN_USER:$ADMIN_PASSWORD install-plugin git -deploy
+done
 
-# java -jar jenkins-cli.jar -s "$JENKINS_URL" safe-restart
+# Restart Jenkins to apply plugin changes
+sudo systemctl restart jenkins
+
+# === Set Jenkins URL === #
+JENKINS_URL="http://localhost:8080"
+NEW_URL="http://3.238.51.46:8080/"  # change this to your actual Jenkins URL
+
+cat <<EOF > set-url.groovy
+import jenkins.model.JenkinsLocationConfiguration
+
+def jlc = JenkinsLocationConfiguration.get()
+jlc.setUrl("$NEW_URL")
+jlc.save()
+EOF
+
+java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth $ADMIN_USER:$ADMIN_PASSWORD groovy = < set-url.groovy
+
+rm set-url.groovy
+
+
+
