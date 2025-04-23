@@ -91,15 +91,15 @@ sudo systemctl restart jenkins
 # Install Jenkins CLI
 wget "$JENKINS_URL/jnlpJars/jenkins-cli.jar" -O jenkins-cli.jar
 
-# while IFS= read -r plugin; do
-#   java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth $ADMIN_USER:$ADMIN_PASSWORD install-plugin "$plugin" -deploy
-# done < plugins.txt
+echo "Installing Jenkins plugins..."
+# JENKINS_PLUGINS=${jenkins_plugins}
 
-# PLUG="git git-client credentials credentials-binding cloudbees-folder"
+# echo "Jenkins plugins to be installed: $JENKINS_PLUGINS"
 
-# for plugin in $PLUGINS; do
-#   java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth $ADMIN_USER:$ADMIN_PASSWORD install-plugin $plugin -deploy
-# done
+for plugin in ${jenkins_plugins}; do
+  java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth $ADMIN_USER:$ADMIN_PASSWORD install-plugin $plugin -deploy
+done
+echo "Jenkins plugins installed successfully."
 
 # Restart Jenkins to apply plugin changes
 sudo systemctl restart jenkins

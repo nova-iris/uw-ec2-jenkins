@@ -16,10 +16,6 @@ data "aws_subnets" "default" {
   }
 }
 
-# data "aws_ssm_parameter" "ubuntu_24_04" {
-#   name = "/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp2/ami-id"
-# }
-
 resource "aws_key_pair" "ec2_key" {
   key_name   = "${var.instance_name}-key"
   public_key = file("${var.public_key}")
@@ -64,17 +60,6 @@ resource "aws_security_group" "jenkins_sg" {
   }
 }
 
-# data "template_file" "user_data" {
-#   template = file("${path.module}/scripts/user_data.sh.tpl")
-#   vars = {
-#     admin_user       = var.init_admin_user
-#     admin_password   = var.init_admin_password
-#     github_repo_url  = var.github_repo_url
-#     github_branch    = var.github_branch
-#     jenkins_job_name = var.jenkins_job_name
-#   }
-# }
-
 module "jenkins_server" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "~> 4.3.0"
@@ -97,15 +82,13 @@ module "jenkins_server" {
     }
   ]
 
-  # user_data = file("${path.module}/scripts/user_data.sh")
-  # user_data = data.template_file.user_data.rendered
-
   user_data = templatefile("${path.module}/scripts/user_data.sh.tftpl", {
     admin_user       = var.init_admin_user
     admin_password   = var.init_admin_password
     github_repo_url  = var.github_repo_url
     github_branch    = var.github_branch
     jenkins_job_name = var.jenkins_job_name
+    jenkins_plugins  = join(" ", var.jenkins_plugins)
   })
 
   tags = {

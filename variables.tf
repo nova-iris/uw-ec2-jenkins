@@ -65,41 +65,41 @@ variable "init_admin_password" {
   default     = "your_secure_password"
 }
 
-# variable "jenkins_plugins" {
-#   description = "List of Jenkins plugins to install"
-#   type        = list(string)
-#   default = [
-#     "git",
-#     "git-client",
-#     "credentials",
-#     "credentials-binding",
-#     "cloudbees-folder",
-#     "workflow-job",
-#     "workflow-api",
-#     "workflow-cps",
-#     "workflow-multibranch",
-#     "workflow-basic-steps",
-#     "workflow-durable-task-step",
-#     "workflow-scm-step",
-#     "workflow-step-api",
-#     "workflow-support",
-#     "pipeline-groovy-lib",
-#     "pipeline-input-step",
-#     "pipeline-model-api",
-#     "pipeline-model-definition",
-#     "pipeline-model-extensions",
-#     "pipeline-stage-step",
-#     "pipeline-stage-tags-metadata",
-#     "scm-api",
-#     "ssh-credentials",
-#     "plain-credentials",
-#     "structs",
-#     "script-security",
-#     "matrix-project",
-#     "mailer",
-#     "ws-cleanup"
-#   ]
-# }
+variable "jenkins_plugins" {
+  description = "List of Jenkins plugins to install"
+  type        = list(string)
+  default = [
+    "git",
+    "git-client",
+    "credentials",
+    "credentials-binding",
+    "cloudbees-folder",
+    "workflow-job",
+    "workflow-api",
+    "workflow-cps",
+    "workflow-multibranch",
+    "workflow-basic-steps",
+    "workflow-durable-task-step",
+    "workflow-scm-step",
+    "workflow-step-api",
+    "workflow-support",
+    "pipeline-groovy-lib",
+    "pipeline-input-step",
+    "pipeline-model-api",
+    "pipeline-model-definition",
+    "pipeline-model-extensions",
+    "pipeline-stage-step",
+    "pipeline-stage-tags-metadata",
+    "scm-api",
+    "ssh-credentials",
+    "plain-credentials",
+    "structs",
+    "script-security",
+    "matrix-project",
+    "mailer",
+    "ws-cleanup"
+  ]
+}
 
 variable "jenkins_job_name" {
   description = "Name of the Jenkins job to create"
