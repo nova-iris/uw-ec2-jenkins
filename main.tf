@@ -97,8 +97,16 @@ module "jenkins_server" {
     }
   ]
 
-  user_data = file("${path.module}/scripts/user_data.sh")
+  # user_data = file("${path.module}/scripts/user_data.sh")
   # user_data = data.template_file.user_data.rendered
+
+  user_data = templatefile("${path.module}/scripts/user_data.sh.tftpl", {
+    admin_user       = var.init_admin_user
+    admin_password   = var.init_admin_password
+    github_repo_url  = var.github_repo_url
+    github_branch    = var.github_branch
+    jenkins_job_name = var.jenkins_job_name
+  })
 
   tags = {
     Environment = var.environment

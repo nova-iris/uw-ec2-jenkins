@@ -2,11 +2,17 @@
 set -xe
 export DEBIAN_FRONTEND=noninteractive
 
-export ADMIN_USER="admin"
-export ADMIN_PASSWORD="admin"
-export GITHUB_REPO_URL="https://github.com/nova-iris/devops-day-demo.git"
-export GITHUB_BRANCH="main"
-export JENKINS_JOB_NAME="demo-pipeline"
+# export ADMIN_USER="admin"
+# export ADMIN_PASSWORD="admin"
+# export GITHUB_REPO_URL="https://github.com/nova-iris/devops-day-demo.git"
+# export GITHUB_BRANCH="main"
+# export JENKINS_JOB_NAME="demo-pipeline"
+
+export ADMIN_USER="${admin_user}"
+export ADMIN_PASSWORD="${admin_password}"
+export GITHUB_REPO_URL="${github_repo_url}"
+export GITHUB_BRANCH="${github_branch}"
+export JENKINS_JOB_NAME="${jenkins_job_name}"
 
 export JENKINS_HOME="/var/lib/jenkins"
 export JENKINS_URL="http://localhost:8080"
@@ -89,41 +95,11 @@ wget "$JENKINS_URL/jnlpJars/jenkins-cli.jar" -O jenkins-cli.jar
 #   java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth $ADMIN_USER:$ADMIN_PASSWORD install-plugin "$plugin" -deploy
 # done < plugins.txt
 
-PLUGINS=(
-  git
-  git-client
-  credentials
-  credentials-binding
-  cloudbees-folder
-  workflow-job
-  workflow-api
-  workflow-cps
-  workflow-multibranch
-  workflow-basic-steps
-  workflow-durable-task-step
-  workflow-scm-step
-  workflow-step-api
-  workflow-support
-  pipeline-groovy-lib
-  pipeline-input-step
-  pipeline-model-api
-  pipeline-model-definition
-  pipeline-model-extensions
-  pipeline-stage-step
-  pipeline-stage-tags-metadata
-  scm-api
-  ssh-credentials
-  plain-credentials
-  structs
-  script-security
-  matrix-project
-  mailer
-  ws-cleanup
-)
+# PLUG="git git-client credentials credentials-binding cloudbees-folder"
 
-for plugin in "${PLUGINS[@]}"; do
-  java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth $ADMIN_USER:$ADMIN_PASSWORD install-plugin $plugin -deploy
-done
+# for plugin in $PLUGINS; do
+#   java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth $ADMIN_USER:$ADMIN_PASSWORD install-plugin $plugin -deploy
+# done
 
 # Restart Jenkins to apply plugin changes
 sudo systemctl restart jenkins
