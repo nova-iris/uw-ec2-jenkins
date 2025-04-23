@@ -52,6 +52,12 @@ variable "volume_size" {
   default     = 20
 }
 
+variable "instance_state" {
+  description = "State of the EC2 instance after creation"
+  type        = string
+  default     = "stopped"
+}
+
 # Jenkins variables
 variable "init_admin_user" {
   description = "Initial admin user for Jenkins"

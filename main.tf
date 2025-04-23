@@ -97,5 +97,19 @@ module "jenkins_server" {
   }
 }
 
+# This resource will destroy (potentially immediately) after null_resource.next
+resource "null_resource" "previous" {}
 
+resource "time_sleep" "wait_5_mins" {
+  depends_on = [null_resource.previous]
 
+  create_duration = "5m"
+}
+
+# This resource will create (at least) 30 seconds after null_resource.previous
+resource "aws_ec2_instance_state" "test" {
+  instance_id = module.jenkins_server.id
+  state       = var.instance_state
+
+  depends_on = [module.jenkins_server, time_sleep.wait_5_mins]
+}
