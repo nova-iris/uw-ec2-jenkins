@@ -9,6 +9,11 @@ data "aws_subnets" "default" {
     name   = "vpc-id"
     values = [data.aws_vpc.default.id]
   }
+
+  filter {
+    name   = "availability-zone"
+    values = ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d", "us-east-1f"] # Supported AZs from error message
+  }
 }
 
 # data "aws_ssm_parameter" "ubuntu_24_04" {
@@ -59,6 +64,17 @@ resource "aws_security_group" "jenkins_sg" {
   }
 }
 
+# data "template_file" "user_data" {
+#   template = file("${path.module}/scripts/user_data.sh.tpl")
+#   vars = {
+#     admin_user       = var.init_admin_user
+#     admin_password   = var.init_admin_password
+#     github_repo_url  = var.github_repo_url
+#     github_branch    = var.github_branch
+#     jenkins_job_name = var.jenkins_job_name
+#   }
+# }
+
 module "jenkins_server" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "~> 4.3.0"
@@ -68,7 +84,7 @@ module "jenkins_server" {
   ami                    = "ami-084568db4383264d4" # data.aws_ami.ubuntu_24_04.id #" #TODO
   instance_type          = var.instance_type
   key_name               = aws_key_pair.ec2_key.key_name
-  subnet_id              = tolist(data.aws_subnets.default.ids)[1] #var.subnet_id #TODO
+  subnet_id              = tolist(data.aws_subnets.default.ids)[0] #var.subnet_id #TODO
   vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
 
   associate_public_ip_address = true
@@ -82,13 +98,12 @@ module "jenkins_server" {
   ]
 
   user_data = file("${path.module}/scripts/user_data.sh")
+  # user_data = data.template_file.user_data.rendered
 
   tags = {
     Environment = var.environment
     Project     = "Jenkins"
   }
-
-  #   depends_on = [module.ami_ubuntu_24_04_latest]
 }
 
 

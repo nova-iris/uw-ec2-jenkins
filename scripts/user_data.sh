@@ -1,128 +1,203 @@
-#!/bin/bash
-set -e
-export DEBIAN_FRONTEND=noninteractive
-# exec > >(tee /var/log/user-data.log | logger -t user-data -s 2>/dev/console) 2>&1
+# #!/bin/bash
+# set -xe
+# export DEBIAN_FRONTEND=noninteractive
 
-# Update system packages
-sudo apt update && sudo apt upgrade -y
+# # export ADMIN_USER="${admin_user}"
+# # export ADMIN_PASSWORD="${admin_password}"
+# # export GITHUB_REPO_URL="${github_repo_url}"
+# # export GITHUB_BRANCH="${github_branch}"
+# # export JENKINS_JOB_NAME="${jenkins_job_name}"
 
-# Install dependencies and Java
-sudo apt install -y curl gnupg2 software-properties-common openjdk-21-jre
+# export ADMIN_USER="admin"
+# export ADMIN_PASSWORD="admin"
+# export GITHUB_REPO_URL="https://github.com/nova-iris/devops-day-demo.git"
+# export GITHUB_BRANCH="main"
+# export JENKINS_JOB_NAME="demo-pipeline"
 
-# Add Jenkins repo and install
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
-sudo apt update
-sudo apt install -y jenkins
+# export JENKINS_HOME="/var/lib/jenkins"
+# export JENKINS_URL="http://localhost:8080"
 
-# Start Jenkins
-sudo systemctl enable jenkins
-sudo systemctl start jenkins
+# # Update system packages
+# sudo apt update && sudo apt upgrade -y
 
-# Setup init admin user
-export JENKINS_HOME="/var/lib/jenkins"
-export ADMIN_USER="admin"
-export ADMIN_PASSWORD="your_secure_password"
+# # Install dependencies and Java
+# sudo apt install -y curl gnupg2 software-properties-common openjdk-21-jre
 
-# Get the initial admin password
-export INITIAL_ADMIN_PASSWORD=$(sudo cat $JENKINS_HOME/secrets/initialAdminPassword)
+# # Add Jenkins repo and install
+# curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+# echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+# sudo apt update
+# sudo apt install -y jenkins
 
-# Create groovy script to disable setup wizard and create admin user
-cat > /tmp/init.groovy << EOF
-import jenkins.model.*
-import hudson.security.*
-import jenkins.install.InstallState
+# # Start Jenkins
+# sudo systemctl enable jenkins
+# sudo systemctl start jenkins
 
-def instance = Jenkins.getInstance()
+# # Setup init admin user
+# # Create groovy script to disable setup wizard and create admin user
+# cat > /tmp/init.groovy << EOF
+# import jenkins.model.*
+# import hudson.security.*
+# import jenkins.install.InstallState
 
-// Disable setup wizard
-instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
+# def instance = Jenkins.getInstance()
 
-// Create admin user
-def hudsonRealm = new HudsonPrivateSecurityRealm(false)
-hudsonRealm.createAccount("$ADMIN_USER", "$ADMIN_PASSWORD")
-instance.setSecurityRealm(hudsonRealm)
+# // Disable setup wizard
+# instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
 
-def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
-strategy.setAllowAnonymousRead(false)
-instance.setAuthorizationStrategy(strategy)
+# // Create admin user
+# def hudsonRealm = new HudsonPrivateSecurityRealm(false)
+# hudsonRealm.createAccount("$ADMIN_USER", "$ADMIN_PASSWORD")
+# instance.setSecurityRealm(hudsonRealm)
 
-instance.save()
-EOF
+# def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
+# strategy.setAllowAnonymousRead(false)
+# instance.setAuthorizationStrategy(strategy)
 
-# Create directory for groovy scripts if it doesn't exist
-sudo mkdir -p $JENKINS_HOME/init.groovy.d/
+# instance.save()
+# EOF
 
-# Execute the groovy script
-sudo cp /tmp/init.groovy $JENKINS_HOME/init.groovy.d/
+# # Create directory for groovy scripts if it doesn't exist
+# sudo mkdir -p $JENKINS_HOME/init.groovy.d/
 
-# # Restart Jenkins to apply changes
+# # Execute the groovy script
+# sudo cp /tmp/init.groovy $JENKINS_HOME/init.groovy.d/
+
+# # # Restart Jenkins to apply changes
+# # sudo systemctl restart jenkins
+
+# # ==== Disable the Jenkins setup wizard ==== #
+# echo "Disabling Jenkins setup wizard..."
+# echo "JAVA_ARGS=\"-Djenkins.install.runSetupWizard=false\"" | sudo tee /etc/default/jenkins
+
+# # Create the marker file to indicate setup is complete
+# sudo mkdir -p "$JENKINS_HOME"
+# sudo chown -R jenkins:jenkins "$JENKINS_HOME"
+# sudo touch "$JENKINS_HOME"/.jenkins.install.UpgradeWizard.state
+# sudo touch "$JENKINS_HOME"/.jenkins.install.InstallUtil.lastExecVersion
+
+# # Set appropriate content if needed (optional, improves stability)
+# echo "2.426.1" | sudo tee "$JENKINS_HOME"/.jenkins.install.InstallUtil.lastExecVersion
+# echo "2.426.1" | sudo tee "$JENKINS_HOME"/.jenkins.install.UpgradeWizard.state
+
+# # Fix permissions
+# sudo chown jenkins:jenkins "$JENKINS_HOME"/.jenkins.install.*
+
+# # Restart Jenkins
+# echo "Restarting Jenkins..."
 # sudo systemctl restart jenkins
 
-# ==== Disable the Jenkins setup wizard ==== #
-echo "Disabling Jenkins setup wizard..."
-echo "JAVA_ARGS=\"-Djenkins.install.runSetupWizard=false\"" | sudo tee /etc/default/jenkins
+# # ====================== Install plugins ====================== #
+# # Install Jenkins CLI
+# wget "$JENKINS_URL/jnlpJars/jenkins-cli.jar" -O jenkins-cli.jar
 
-# Create the marker file to indicate setup is complete
-sudo mkdir -p "$JENKINS_HOME"
-sudo chown -R jenkins:jenkins "$JENKINS_HOME"
-sudo touch "$JENKINS_HOME"/.jenkins.install.UpgradeWizard.state
-sudo touch "$JENKINS_HOME"/.jenkins.install.InstallUtil.lastExecVersion
+# # while IFS= read -r plugin; do
+# #   java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth $ADMIN_USER:$ADMIN_PASSWORD install-plugin "$plugin" -deploy
+# # done < plugins.txt
 
-# Set appropriate content if needed (optional, improves stability)
-echo "2.426.1" | sudo tee "$JENKINS_HOME"/.jenkins.install.InstallUtil.lastExecVersion
-echo "2.426.1" | sudo tee "$JENKINS_HOME"/.jenkins.install.UpgradeWizard.state
+# PLUGINS=(
+#   git
+#   git-client
+#   credentials
+#   credentials-binding
+#   cloudbees-folder
+#   workflow-job
+#   workflow-api
+#   workflow-cps
+#   workflow-multibranch
+#   workflow-basic-steps
+#   workflow-durable-task-step
+#   workflow-scm-step
+#   workflow-step-api
+#   workflow-support
+#   pipeline-groovy-lib
+#   pipeline-input-step
+#   pipeline-model-api
+#   pipeline-model-definition
+#   pipeline-model-extensions
+#   pipeline-stage-step
+#   pipeline-stage-tags-metadata
+#   scm-api
+#   ssh-credentials
+#   plain-credentials
+#   structs
+#   script-security
+#   matrix-project
+#   mailer
+#   ws-cleanup
+# )
 
-# Fix permissions
-sudo chown jenkins:jenkins "$JENKINS_HOME"/.jenkins.install.*
+# for plugin in "${PLUGINS[@]}"; do
+#   java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth $ADMIN_USER:$ADMIN_PASSWORD install-plugin $plugin -deploy
+# done
 
-# Restart Jenkins
-echo "Restarting Jenkins..."
-sudo systemctl restart jenkins
+# # Restart Jenkins to apply plugin changes
+# sudo systemctl restart jenkins
 
-# # ======================
-# # Install plugins
-# # ======================
-# Install Jenkins CLI
-JENKINS_URL="http://localhost:8080"
-wget "$JENKINS_URL/jnlpJars/jenkins-cli.jar" -O jenkins-cli.jar
+# # === Set Jenkins URL === #
+# PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
 
-PLUGINS=(
-  git
-  github
-  workflow-aggregator    # For pipelines
-  credentials
-  credentials-binding
-  pipeline-github-lib
-  configuration-as-code
-  job-dsl
-  ssh-slaves
-  matrix-auth
-  email-ext
-)
+# if [ -n "$PUBLIC_IP" ]; then
+#   JENKINS_HOST_URL="http://$PUBLIC_IP:8080"
+# else
+#   JENKINS_HOST_URL="http://localhost:8080"
+# fi
 
-for plugin in "${PLUGINS[@]}"; do
-  java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth $ADMIN_USER:$ADMIN_PASSWORD install-plugin git -deploy
-done
+# cat <<EOF > set-url.groovy
+# import jenkins.model.JenkinsLocationConfiguration
 
-# Restart Jenkins to apply plugin changes
-sudo systemctl restart jenkins
+# def jlc = JenkinsLocationConfiguration.get()
+# jlc.setUrl("$JENKINS_HOST_URL")
+# jlc.save()
+# EOF
 
-# === Set Jenkins URL === #
-JENKINS_URL="http://localhost:8080"
-NEW_URL="http://3.238.51.46:8080/"  # change this to your actual Jenkins URL
+# java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth $ADMIN_USER:$ADMIN_PASSWORD groovy = < set-url.groovy
 
-cat <<EOF > set-url.groovy
-import jenkins.model.JenkinsLocationConfiguration
+# rm set-url.groovy
 
-def jlc = JenkinsLocationConfiguration.get()
-jlc.setUrl("$NEW_URL")
-jlc.save()
-EOF
+# # ====================== Install plugins ====================== #
+# # create demo pipeline job
+# cat > /tmp/create-pipeline-job.xml << EOF
+# <?xml version='1.1' encoding='UTF-8'?>
+# <flow-definition plugin="workflow-job@2.40">
+#   <description>Pipeline from GitHub Repository</description>
+#   <keepDependencies>false</keepDependencies>
+#   <properties>
+#     <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+#       <triggers>
+#         <hudson.triggers.SCMTrigger>
+#           <spec>H/5 * * * *</spec>
+#         </hudson.triggers.SCMTrigger>
+#       </triggers>
+#     </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+#   </properties>
+#   <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.87">
+#     <scm class="hudson.plugins.git.GitSCM" plugin="git@4.7.1">
+#       <configVersion>2</configVersion>
+#       <userRemoteConfigs>
+#         <hudson.plugins.git.UserRemoteConfig>
+#           <url>$GITHUB_REPO_URL</url>
+#         </hudson.plugins.git.UserRemoteConfig>
+#       </userRemoteConfigs>
+#       <branches>
+#         <hudson.plugins.git.BranchSpec>
+#           <name>*/$GITHUB_BRANCH</name>
+#         </hudson.plugins.git.BranchSpec>
+#       </branches>
+#       <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+#       <submoduleCfg class="empty-list"/>
+#       <extensions/>
+#     </scm>
+#     <scriptPath>Jenkinsfile</scriptPath>
+#     <lightweight>true</lightweight>
+#   </definition>
+#   <triggers/>
+#   <disabled>false</disabled>
+# </flow-definition>
+# EOF
+# fi
 
-java -jar jenkins-cli.jar -s "$JENKINS_URL" -auth $ADMIN_USER:$ADMIN_PASSWORD groovy = < set-url.groovy
-
-rm set-url.groovy
-
-
+# echo "Creating pipeline project for GitHub repository..."
+# java -jar jenkins-cli.jar -s http://localhost:8080/ -auth $ADMIN_USER:$ADMIN_PASSWORD create-job $JENKINS_JOB_NAME < /tmp/create-pipeline-job.xml
+# echo "Pipeline project created successfully."
 

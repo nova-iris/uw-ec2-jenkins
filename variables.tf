@@ -52,10 +52,68 @@ variable "volume_size" {
   default     = 20
 }
 
-variable "enable_s3_backup" {
-  description = "Enable S3 backup for Jenkins data"
-  type        = bool
-  default     = false
+# Jenkins variables
+variable "init_admin_user" {
+  description = "Initial admin user for Jenkins"
+  type        = string
+  default     = "admin"
 }
 
-# Jenkins variables
+variable "init_admin_password" {
+  description = "Initial admin password for Jenkins"
+  type        = string
+  default     = "your_secure_password"
+}
+
+# variable "jenkins_plugins" {
+#   description = "List of Jenkins plugins to install"
+#   type        = list(string)
+#   default = [
+#     "git",
+#     "git-client",
+#     "credentials",
+#     "credentials-binding",
+#     "cloudbees-folder",
+#     "workflow-job",
+#     "workflow-api",
+#     "workflow-cps",
+#     "workflow-multibranch",
+#     "workflow-basic-steps",
+#     "workflow-durable-task-step",
+#     "workflow-scm-step",
+#     "workflow-step-api",
+#     "workflow-support",
+#     "pipeline-groovy-lib",
+#     "pipeline-input-step",
+#     "pipeline-model-api",
+#     "pipeline-model-definition",
+#     "pipeline-model-extensions",
+#     "pipeline-stage-step",
+#     "pipeline-stage-tags-metadata",
+#     "scm-api",
+#     "ssh-credentials",
+#     "plain-credentials",
+#     "structs",
+#     "script-security",
+#     "matrix-project",
+#     "mailer",
+#     "ws-cleanup"
+#   ]
+# }
+
+variable "jenkins_job_name" {
+  description = "Name of the Jenkins job to create"
+  type        = string
+  default     = "demo-job"
+}
+
+variable "github_repo_url" {
+  description = "GitHub repository URL for the Jenkins job"
+  type        = string
+}
+
+variable "github_branch" {
+  description = "GitHub branch for the Jenkins job"
+  type        = string
+  default     = "*"
+}
