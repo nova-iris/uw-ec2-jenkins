@@ -13,9 +13,10 @@ export ADMIN_PASSWORD="${admin_password}"
 export GITHUB_REPO_URL="${github_repo_url}"
 export GITHUB_BRANCH="${github_branch}"
 export JENKINS_JOB_NAME="${jenkins_job_name}"
+export JENKINS_PORT="${jenkins_port}"
 
 export JENKINS_HOME="/var/lib/jenkins"
-export JENKINS_URL="http://localhost:8080"
+export JENKINS_URL="http://localhost:$JENKINS_PORT"
 
 # Update system packages
 sudo apt update && sudo apt upgrade -y
@@ -28,6 +29,10 @@ curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /
 echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
 sudo apt update
 sudo apt install -y jenkins
+
+# Configure Jenkins port before starting it
+echo "Configuring Jenkins to use port $JENKINS_PORT..."
+echo "HTTP_PORT=$JENKINS_PORT" | sudo tee -a /etc/default/jenkins
 
 # Start Jenkins
 sudo systemctl enable jenkins
@@ -108,9 +113,9 @@ sudo systemctl restart jenkins
 PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
 
 if [ -n "$PUBLIC_IP" ]; then
-  JENKINS_HOST_URL="http://$PUBLIC_IP:8080"
+  JENKINS_HOST_URL="http://$PUBLIC_IP:$JENKINS_PORT"
 else
-  JENKINS_HOST_URL="http://localhost:8080"
+  JENKINS_HOST_URL=$JENKINS_URL
 fi
 
 cat <<EOF > set-url.groovy

@@ -1,19 +1,9 @@
-# Get the default VPC
-data "aws_vpc" "default" {
-  default = true
+module "ami_ubuntu_24_04_latest" {
+  source = "github.com/andreswebs/terraform-aws-ami-ubuntu"
 }
 
-# Get all subnets in the default VPC
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-
-  filter {
-    name   = "availability-zone"
-    values = ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d", "us-east-1f"] # Supported AZs from error message
-  }
+locals {
+  ami_id = module.ami_ubuntu_24_04_latest.ami_id
 }
 
 resource "aws_key_pair" "ec2_key" {
@@ -66,7 +56,7 @@ module "jenkins_server" {
 
   name = var.instance_name
 
-  ami                    = "ami-084568db4383264d4" # data.aws_ami.ubuntu_24_04.id #" #TODO
+  ami                    = local.ami_id
   instance_type          = var.instance_type
   key_name               = aws_key_pair.ec2_key.key_name
   subnet_id              = tolist(data.aws_subnets.default.ids)[0] #var.subnet_id #TODO
@@ -85,6 +75,7 @@ module "jenkins_server" {
   user_data = templatefile("${path.module}/scripts/user_data.sh.tftpl", {
     admin_user       = var.init_admin_user
     admin_password   = var.init_admin_password
+    jenkins_port     = var.jenkins_port
     github_repo_url  = var.github_repo_url
     github_branch    = var.github_branch
     jenkins_job_name = var.jenkins_job_name

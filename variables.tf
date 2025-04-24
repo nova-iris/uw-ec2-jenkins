@@ -71,6 +71,12 @@ variable "init_admin_password" {
   default     = "your_secure_password"
 }
 
+variable "jenkins_port" {
+  description = "Jenkins port"
+  type        = number
+  default     = 8080
+}
+
 variable "jenkins_plugins" {
   description = "List of Jenkins plugins to install"
   type        = list(string)
