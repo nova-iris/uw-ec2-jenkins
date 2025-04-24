@@ -6,11 +6,6 @@ locals {
   ami_id = module.ami_ubuntu_24_04_latest.ami_id
 }
 
-resource "aws_key_pair" "ec2_key" {
-  key_name   = "${var.instance_name}-key"
-  public_key = file("${var.public_key}")
-}
-
 resource "aws_security_group" "jenkins_sg" {
   name        = "jenkins-sg"
   description = "Allow SSH, HTTP, and Jenkins"
@@ -48,6 +43,11 @@ resource "aws_security_group" "jenkins_sg" {
     Environment = var.environment
     Project     = "Jenkins"
   }
+}
+
+resource "aws_key_pair" "ec2_key" {
+  key_name   = "${var.instance_name}-key"
+  public_key = file("${var.public_key}")
 }
 
 module "jenkins_server" {

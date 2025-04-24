@@ -32,7 +32,12 @@ sudo apt install -y jenkins
 
 # Configure Jenkins port before starting it
 echo "Configuring Jenkins to use port $JENKINS_PORT..."
-echo "HTTP_PORT=$JENKINS_PORT" | sudo tee -a /etc/default/jenkins
+# Check if HTTP_PORT already exists and update it, otherwise add it
+if grep -q "^HTTP_PORT=" /etc/default/jenkins; then
+  sudo sed -i "s/^HTTP_PORT=.*/HTTP_PORT=$JENKINS_PORT/" /etc/default/jenkins
+else
+  echo "HTTP_PORT=$JENKINS_PORT" | sudo tee -a /etc/default/jenkins
+fi
 
 # Start Jenkins
 sudo systemctl enable jenkins
@@ -73,7 +78,7 @@ sudo cp /tmp/init.groovy $JENKINS_HOME/init.groovy.d/
 
 # ==== Disable the Jenkins setup wizard ==== #
 echo "Disabling Jenkins setup wizard..."
-echo "JAVA_ARGS=\"-Djenkins.install.runSetupWizard=false\"" | sudo tee /etc/default/jenkins
+echo "JAVA_ARGS=\"-Djenkins.install.runSetupWizard=false\"" | sudo tee -a /etc/default/jenkins
 
 # Create the marker file to indicate setup is complete
 sudo mkdir -p "$JENKINS_HOME"
