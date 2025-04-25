@@ -34,6 +34,12 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
+variable "instance_state" {
+  description = "EC2 instance state"
+  type        = string
+  default     = "stopped"
+}
+
 variable "public_key" {
   description = "Public key for SSH access"
   type        = string
@@ -67,7 +73,6 @@ variable "init_admin_user" {
 variable "init_admin_password" {
   description = "Initial admin password for Jenkins"
   type        = string
-  default     = "your_secure_password"
 }
 
 variable "jenkins_plugins" {

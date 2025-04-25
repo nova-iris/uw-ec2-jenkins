@@ -34,6 +34,7 @@ This Terraform configuration provisions a Jenkins server on AWS EC2. The server 
 - Provisions the EC2 instance
 - Installs and configures Jenkins
 - Creates initial admin user
+- Install initial plugins from `jenkins_plugins`
 - Sets up demo pipeline job with the specified public GitHub repository
 - Waits 5 minutes before shutting down the instance
 
@@ -73,10 +74,10 @@ This Terraform configuration provisions a Jenkins server on AWS EC2. The server 
 | volume_size | Size of root volume in GB | number | 20 | no |
 | init_admin_user | Initial Jenkins admin username | string | admin | no |
 | init_admin_password | Initial Jenkins admin password | string | your_secure_password | yes |
+| jenkins_plugins | List of Jenkins plugins to install | list | <in variable.tf> | no |
 | jenkins_job_name | Name of the initial pipeline job | string | demo-job | no |
 | github_repo_url | GitHub repository URL for pipeline | string | - | yes |
 | github_branch | GitHub branch for pipeline | string | main | no |
-| public_subnets | List of public subnet IDs for ALB | list(string) | [] | no |
 
 ## Security
 

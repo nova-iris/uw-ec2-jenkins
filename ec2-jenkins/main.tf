@@ -104,3 +104,14 @@ module "jenkins_server" {
     Project     = "Jenkins"
   }
 }
+
+resource "time_sleep" "wait_5_mins" {
+  depends_on      = [module.jenkins_server]
+  create_duration = "5m"
+}
+
+resource "aws_ec2_instance_state" "this" {
+  instance_id = module.jenkins_server.id
+  state       = var.instance_state
+  depends_on  = [time_sleep.wait_5_mins]
+}

@@ -1,4 +1,4 @@
-variable "public_subnets" {
+variable "public_subnet_ids" {
   description = "List of public subnet IDs for the ALB"
   type        = list(string)
   default     = []
@@ -9,7 +9,7 @@ resource "aws_lb" "jenkins_alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.jenkins_sg.id]
-  subnets            = var.public_subnets
+  subnets            = var.public_subnet_ids
 
   enable_deletion_protection = false
 

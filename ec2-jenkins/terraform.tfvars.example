@@ -9,10 +9,11 @@ environment                 = "dev"
 associate_public_ip_address = false
 vpc_id                      = "<YOUR_VPC_ID>"
 subnet_id                   = "<YOUR_SUBNET_ID>"
+instance_state              = "stopped" # "stopped" or "running"
 
 # Jenkins configuration
-init_admin_user     = "<YOUR_ADMIN_USER>"
-init_admin_password = "<YOUR_ADMIN_PASSWORD>"
+init_admin_user     = "admin"
+init_admin_password = "your_secure_password"
 jenkins_job_name    = "demo-job"
 github_repo_url     = "https://github.com/nova-iris/devops-day-demo.git"
 github_branch       = "main"
