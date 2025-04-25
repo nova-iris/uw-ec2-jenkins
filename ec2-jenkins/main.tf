@@ -1,3 +1,19 @@
+terraform {
+  required_version = ">= 1.0.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region     = var.aws_region
+  access_key = var.access_key
+  secret_key = var.secret_key
+}
+
 module "ami_ubuntu_24_04_latest" {
   source = "github.com/andreswebs/terraform-aws-ami-ubuntu"
 }
@@ -9,13 +25,13 @@ locals {
 resource "aws_security_group" "jenkins_sg" {
   name        = "jenkins-sg"
   description = "Allow SSH, HTTP, and Jenkins"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = var.vpc_id
 
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Consider locking this down later #TODO
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
@@ -29,7 +45,7 @@ resource "aws_security_group" "jenkins_sg" {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # If internal only, change this to VPC CIDR #TODO
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -60,10 +76,10 @@ module "jenkins_server" {
   ami                    = local.ami_id
   instance_type          = var.instance_type
   key_name               = var.public_key != "" ? aws_key_pair.ec2_key[0].key_name : null
-  subnet_id              = module.vpc.private_subnets[0] # Use the first public subnet
+  subnet_id              = var.subnet_id
   vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
 
-  associate_public_ip_address = false # Ensure no public IP is assigned
+  associate_public_ip_address = var.associate_public_ip_address
 
   root_block_device = [
     {
@@ -88,20 +104,3 @@ module "jenkins_server" {
     Project     = "Jenkins"
   }
 }
-
-# This resource will destroy (potentially immediately) after null_resource.next
-# resource "null_resource" "previous" {}
-
-# resource "time_sleep" "wait_5_mins" {
-#   depends_on = [null_resource.previous]
-
-#   create_duration = "5m"
-# }
-
-# # This resource will create (at least) 30 seconds after null_resource.previous
-# resource "aws_ec2_instance_state" "test" {
-#   instance_id = module.jenkins_server.id
-#   state       = var.instance_state
-
-#   depends_on = [module.jenkins_server, time_sleep.wait_5_mins]
-# }

@@ -1,3 +1,19 @@
+terraform {
+  required_version = ">= 1.0.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region     = var.aws_region
+  access_key = var.access_key
+  secret_key = var.secret_key
+}
+
 data "aws_availability_zones" "available" {
   state = "available"
 }
@@ -32,16 +48,4 @@ module "vpc" {
     Environment = var.environment
     Project     = "Jenkins"
   }
-}
-
-output "vpc_id" {
-  value = module.vpc.vpc_id
-}
-
-output "public_subnet_ids" {
-  value = module.vpc.public_subnets
-}
-
-output "private_subnet_ids" {
-  value = module.vpc.private_subnets
 }

@@ -12,7 +12,16 @@ variable "secret_key" {
   description = "AWS secret key"
 }
 
-# EC2 instance variables
+variable "vpc_id" {
+  description = "VPC ID from vpc-jenkins module"
+  type        = string
+}
+
+variable "subnet_id" {
+  description = "Subnet ID from vpc-jenkins module"
+  type        = string
+}
+
 variable "instance_name" {
   description = "Name of the EC2 instance"
   type        = string
@@ -26,7 +35,7 @@ variable "instance_type" {
 }
 
 variable "public_key" {
-  description = "Public yey for SSH access"
+  description = "Public key for SSH access"
   type        = string
   default     = ""
 }
@@ -35,22 +44,6 @@ variable "associate_public_ip_address" {
   description = "Associate a public IP address with the instance"
   type        = bool
   default     = false
-}
-
-variable "vpc_id" {
-  description = "VPC ID where the instance will be launched"
-  type        = string
-}
-
-variable "vpc_cidr" {
-  description = "CIDR block for the VPC"
-  type        = string
-  default     = "10.42.0.0/16"
-}
-
-variable "subnet_id" {
-  description = "Subnet ID for the EC2 instance"
-  type        = string
 }
 
 variable "environment" {
@@ -65,13 +58,6 @@ variable "volume_size" {
   default     = 20
 }
 
-variable "instance_state" {
-  description = "State of the EC2 instance after creation"
-  type        = string
-  default     = "stopped"
-}
-
-# Jenkins variables
 variable "init_admin_user" {
   description = "Initial admin user for Jenkins"
   type        = string
