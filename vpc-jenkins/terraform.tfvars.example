@@ -1,0 +1,18 @@
+# AWS Provider Configuration
+# ---------------------------
+aws_region = "us-east-1"       # The AWS region where resources will be created
+access_key = "YOUR_ACCESS_KEY" # Replace with your AWS access key
+secret_key = "YOUR_SECRET_KEY" # Replace with your AWS secret key
+
+# VPC Configuration
+# ----------------
+vpc_cidr = "10.42.0.0/16" # CIDR block for the VPC (modify if needed)
+
+# Environment Configuration
+# ------------------------
+environment = "dev" # Environment name (dev, staging, prod, etc.)
+
+# Note: The module will automatically:
+# - Create 3 public and 3 private subnets across available AZs
+# - Set up NAT gateway for internet access from private subnets
+# - Configure appropriate routing tables and security groups
